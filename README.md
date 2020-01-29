@@ -1,68 +1,136 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React Redux 
 
-## Available Scripts
+1. Thunk 
 
-In the project directory, you can run:
 
-### `npm start`
+npm install -g create-react-app
+create-react-app name
+cd name
+npm start
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+npm install  redux redux-thunk react-redux
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+Now create a folder in src directory name ACTION
+and create a file name fetchActions.js under the folder action  can be named as action types or action creators 
 
-### `npm test`
+create a folder name REDUCER in src directory 
+and a file name index.js under the folder reducer 
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+create a file store.js in the src dircetory
+now create a initial store 
 
-### `npm run build`
+in the store.js 
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+******************************************************************
+                     Store.js
+               **********************
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+import {createStore, applyMiddleware} from "redux"                   
+import asyncReduceer from "./reducer"
+import thunk from "redux-thunk"
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+const store = createStore(asyncReducer, applyMiddleware(thunk))             --createStore is used for creating the redux store 
+                                                                            --applyMiddleware will be used for adding the thunk middleware. 
+export default store
+*******************************************************************
 
-### `npm run eject`
+What is a middleware?
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Well it is nothing but a piece of code that sits between your actions and your reducers. 
+It takes your actions does something to it before passing it down to the reducer. 
+Think of it like a middle-man or a bridge between redux store and your react app
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Now in the index.js inside reducers
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+*********************************************************************
+                         Index.js/Reducers
+                  ********************
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+const initialState ={
+  userData:{},                            -- The userData is an object that will house all the user related information that we will get from our API.
+isFetching:false,                         --The isFetching property will be used to load the loading indicatior depending upon when the API request is made.
+isError:false                             -- isError is used to render an error message in case we do not get back any user data.
+};
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+const asyncReducer =(state = initialState,action)=>{
+return state;
+}
 
-### Code Splitting
+export default asyncReducer
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+*********************************************************************
 
-### Analyzing the Bundle Size
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+Now head on to the main index.js file in the src directory and import the store and provider from react-redux 
 
-### Making a Progressive Web App
+**********************************************************************
+                   Index.js
+             ********************
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+import store from "./store"
+import {Provider} from "react-redux"
 
-### Advanced Configuration
+<Provider store={store}>        --  Provider component that allows us to access the store state from our components
+</App>
+</Provider>
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+***********************************************************************
 
-### Deployment
+Now head up to fetchaction.js in action
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+***********************************************************************
+*******************FETCHACTION.JS**************************************
 
-### `npm run build` fails to minify
+We are making use of action creators.
+Action creators are just functions that returns an action object.
+we have three action creators each of them returning an action.
+A little refresher before going forward.
+Actions are plain old javascript objects which has a mandatory type property.
+This property defines what sort of action/event is taking place in the application.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+**************************************************************************
+
+import store from "../store"
+
+export const fetch_post =()=>{                     The first action creator fetch_post is responsible for starting the fetch request. It would be used mainly for showing the loading indicator.
+return{
+type:"FETCH_USER"
+};
+};
+
+export const fetched_post =post=>{               The second action creator receive_post will be called when we get back the data from github. 
+return{
+type:"FETCHED_USER",
+data:post
+};
+};
+
+export const recieve_error =()=>{             Finally receive_error is an action creator that will be called only when we have an error in getting our data back from github's servers.
+return{
+type:"RECIEVE_ERROR"
+};
+};
+ 
+***************************************************************************
+         ***************Understanding Thunk******************
+***************************************************************************
+         A THUNK IS A FUNCTION THAT RETURNS ANOTHER FUNCTION	
+
+***************************************************************************
+For Example-
+function say() {
+  return function something() {
+    //code here
+  };
+}
+
+**************************
+1.The above function say() is a thunk because it returns another function in this case something().
+2.Redux reducers are pure functions hence we can't do any async operations inside the reducers and actions are just plain old objects.
+
+3.Our dispatch method inside the store accepts an action object as its parameter what the redux thunk middleware does is that if say an action creator
+  returns a function instead of an object then it simply executes that returning function.
+
+
